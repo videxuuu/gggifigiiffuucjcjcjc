@@ -1,0 +1,20 @@
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: android
+workflows:
+  build_apk:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - script@1:
+        title: Compilar APK
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            chmod +x ./gradlew
+            ./gradlew assembleRelease --no-daemon
+            mkdir -p "$BITRISE_DEPLOY_DIR"
+            cp app/build/outputs/apk/release/app-release.apk "$BITRISE_DEPLOY_DIR/Videx.apk"
+    - deploy-to-bitrise-io@2: {}
